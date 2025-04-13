@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IntentRead – The Researcher's Desk</title>
+  <!-- Classic Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Noto+Serif:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    /* ---------- Base Styles & Library Theme ---------- */
+    :root {
+      --bg-primary: #fdf8f0; /* Warm parchment/off-white */
+      --bg-secondary: #efebe9; /* Slightly darker paper/light wood */
+      --bg-wood-dark: #5D4037; /* Dark wood tone */
+      --bg-wood-light: #A1887F; /* Lighter wood tone */
+      --text-primary: #3E2723; /* Dark brown text */
+      --text-secondary: #6D4C41; /* Muted brown text */
+      --text-on-dark: #F5F5F5; /* Light text for dark backgrounds */
+      --accent-primary: #E65100; /* Burnt orange/fire accent */
+      --accent-secondary: #BF360C; /* Deeper red/leather accent */
+      --accent-gold: #B8860B; /* Muted gold */
+      --border-color: #8D6E63; /* Mid-brown border */
+      --shadow-color: rgba(93, 64, 55, 0.2); /* Brownish shadow */
+      --font-heading: 'Merriweather', serif;
+      --font-body: 'Noto Serif', serif;
+
+      --input-bg: #fff; /* White input background */
+      --input-border: #BDBDBD;
+      --input-focus-border: var(--accent-primary);
+      --input-focus-shadow: rgba(230, 81, 0, 0.3);
+
+      --results-bg: #FFF8E1; /* Light cream for results */
+      --results-border: #FFECB3;
+      --saved-item-bg: #F5F5F5; /* Light grey paper for saved items */
+      --saved-item-border: #E0E0E0;
+      --topic-bg: #EFEBE9;
+      --topic-border: #D7CCC8;
+      --topic-hover-bg: #D7CCC8;
+      --topic-hover-border: var(--accent-secondary);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background-color: var(--bg-wood-dark);
+      /* Optional: Subtle wood texture */
+      /* background-image: url('path/to/dark-wood-texture.png'); */
+      color: var(--text-primary);
+      padding: 20px;
+      line-height: 1.7;
+    }
+
+    .container {
+      max-width: 950px;
+      margin: 25px auto;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 4px 15px var(--shadow-color);
+      padding: 30px 35px;
+      background: var(--bg-primary); /* Parchment background */
+      border-radius: 8px; /* Slightly rounded corners */
+    }
+
+    /* Typography */
+    h1, h2, h3 {
+      font-family: var(--font-heading);
+      color: var(--text-primary);
+      margin-bottom: 25px;
+      text-align: center;
+      letter-spacing: 0.5px;
+    }
+    h1 {
+        font-size: 2.4em;
+        color: var(--accent-secondary); /* Deep red for main title */
+        border-bottom: 2px solid var(--border-color);
+        padding-bottom: 10px;
+    }
+    h2 {
+        font-size: 1.8em;
+        margin-top: 30px;
+        color: var(--text-primary);
+    }
+    h3 {
+        font-size: 1.4em;
+        color: var(--text-secondary);
+        border-bottom: 1px dashed var(--border-color);
+        padding-bottom: 8px;
+        text-align: left; /* Align section headers left */
+    }
+    p { color: var(--text-secondary); margin-bottom: 1em; }
+
+    /* Input and Buttons */
+    .search-controls {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+    }
+
+    input[type="text"],
+    textarea {
+      padding: 12px 15px;
+      font-size: 1em;
+      border-radius: 4px;
+      border: 1px solid var(--input-border);
+      background: var(--input-bg);
+      color: var(--text-primary);
+      font-family: var(--font-body);
+      flex-grow: 1;
+      min-width: 200px;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    input[type="text"]:focus,
+    textarea:focus {
+        outline: none;
+        border-color: var(--input-focus-border);
+        box-shadow: 0 0 8px var(--input-focus-shadow);
+    }
+    textarea {
+        width: 100%;
+        margin-top: 8px;
+        line-height: 1.6;
+    }
+    label {
+        display: block;
+        margin: 15px 0 5px 0;
+        color: var(--text-secondary);
+        font-size: 0.95em;
+        font-weight: bold;
+        text-align: left;
+    }
+
+    button, .tab {
+      padding: 10px 22px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      background: var(--bg-wood-light); /* Wood button */
+      color: var(--text-on-dark);
+      cursor: pointer;
+      font-family: var(--font-body);
+      font-weight: bold;
+      margin: 5px;
+      transition: background-color 0.3s, color 0.3s, transform 0.2s, box-shadow 0.3s;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+      box-shadow: 0 2px 4px var(--shadow-color);
+    }
+    button:hover, .tab:hover {
+      background-color: var(--bg-wood-dark);
+      color: var(--text-on-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px var(--shadow-color);
+    }
+    button:active, .tab:active {
+        transform: translateY(0px);
+        box-shadow: 0 1px 2px var(--shadow-color);
+    }
+    /* Primary action button style */
+    button[onclick="performSearch()"], button[onclick="saveArticle()"] {
+        background-color: var(--accent-primary);
+        border-color: var(--accent-secondary);
+        color: white;
+    }
+    button[onclick="performSearch()"]:hover, button[onclick="saveArticle()"]:hover {
+        background-color: var(--accent-secondary);
+        color: white;
+    }
+    /* Secondary button style */
+    button.secondary {
+        background-color: var(--bg-secondary);
+        border-color: var(--border-color);
+        color: var(--text-secondary);
+    }
+    button.secondary:hover {
+        background-color: #D7CCC8; /* Slightly darker paper */
+        color: var(--text-primary);
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      justify-content: center;
+      margin: 0 auto 30px auto; /* Center tabs below first container */
+      max-width: 950px;
+      flex-wrap: wrap;
+      gap: 10px;
+      border-bottom: 2px solid var(--bg-wood-dark);
+      padding-bottom: 10px;
+    }
+    .tab.active-tab {
+      background: var(--accent-primary); /* Fire accent for active tab */
+      color: white;
+      border-color: var(--accent-secondary);
+      box-shadow: 0 2px 5px var(--input-focus-shadow);
+    }
+
+    /* Topic Suggestions */
+    .topic-suggestions {
+      margin-top: 15px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: center;
+    }
+    .topic {
+      background: var(--topic-bg);
+      padding: 6px 14px;
+      border-radius: 15px; /* Pill shape */
+      cursor: pointer;
+      font-size: 0.95em;
+      transition: background-color 0.2s, transform 0.2s, box-shadow 0.2s;
+      border: 1px solid var(--topic-border);
+      color: var(--text-secondary);
+    }
+    .topic:hover {
+      background: var(--topic-hover-bg);
+      border-color: var(--topic-hover-border);
+      color: var(--accent-secondary);
+      transform: translateY(-1px);
+      box-shadow: 0 2px 5px var(--shadow-color);
+    }
+
+    /* Results & Resources Section */
+    .results-section, .quick-links-section, .tab-content .card {
+      margin-top: 25px;
+      padding: 25px;
+      background: var(--bg-secondary); /* Light paper */
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+      text-align: left;
+      box-shadow: 0 2px 5px var(--shadow-color);
+    }
+    .results-section h3, .quick-links-section h3, .tab-content .card h2 {
+        margin-top: 0;
+        color: var(--text-primary); /* Darker heading for sections */
+        text-align: left;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 10px;
+    }
+
+    .resource-link, .search-result-link {
+      background: var(--bg-primary); /* Match container background */
+      padding: 8px 15px;
+      margin: 6px;
+      border-radius: 4px;
+      text-decoration: none;
+      font-size: 0.95em;
+      color: var(--text-secondary);
+      display: inline-block;
+      transition: all 0.2s ease;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 1px 2px var(--shadow-color);
+    }
+    .resource-link:hover, .search-result-link:hover {
+      color: var(--accent-primary);
+      border-color: var(--accent-primary);
+      transform: translateY(-1px);
+      box-shadow: 0 3px 6px var(--shadow-color);
+      text-decoration: underline;
+    }
+    .search-result-link {
+        background: var(--results-bg);
+        border-color: var(--results-border);
+        color: var(--text-primary);
+    }
+    .search-result-link:hover {
+        color: var(--accent-primary);
+        border-color: var(--accent-primary);
+    }
+
+    /* Saved Articles Specific Styles */
+    #saved { /* Container for the saved tab content */
+        background: transparent;
+        border: none;
+        box-shadow: none;
+        padding: 0;
+    }
+    .tab-content .card { /* Style the cards within the saved tab */
+        max-width: 100%;
+        margin-bottom: 30px;
+    }
+    #savedArticlesList {
+        list-style: none;
+        padding: 0;
+        margin-top: 20px;
+        text-align: left;
+    }
+    .saved-article-item {
+        background: var(--saved-item-bg);
+        border: 1px solid var(--saved-item-border);
+        border-radius: 4px;
+        padding: 15px 20px;
+        margin-bottom: 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 15px;
+        transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    .saved-article-item:hover {
+        border-color: var(--accent-gold);
+        box-shadow: 0 2px 5px rgba(184, 134, 11, 0.2);
+    }
+    .saved-article-item div { flex-grow: 1; }
+    .saved-article-item a {
+        font-weight: bold;
+        color: var(--accent-secondary); /* Deep red link */
+        text-decoration: none;
+        display: block;
+        margin-bottom: 5px;
+        font-size: 1.1em;
+    }
+    .saved-article-item a:hover { text-decoration: underline; }
+    .saved-article-item p { /* Notes */
+        font-size: 0.95em;
+        color: var(--text-secondary);
+        margin: 8px 0 0 0;
+        white-space: pre-wrap;
+        font-style: italic;
+    }
+    .saved-article-item button { /* Delete button */
+        padding: 5px 12px;
+        font-size: 0.85em;
+        border-color: #B71C1C; /* Darker red */
+        background: #EF9A9A; /* Light red background */
+        color: #B71C1C;
+        flex-shrink: 0;
+        box-shadow: none;
+    }
+     .saved-article-item button:hover {
+        background: #E57373;
+        color: white;
+        border-color: #C62828;
+        box-shadow: 0 1px 3px rgba(183, 28, 28, 0.4);
+     }
+
+    /* Recommendation Display */
+    #recommendationDisplay {
+        margin-top: 25px;
+        padding: 20px;
+        background: #FFFDE7; /* Very light yellow, like old paper */
+        border: 1px dashed var(--border-color);
+        border-radius: 4px;
+        text-align: left;
+        min-height: 70px;
+    }
+     #recommendationDisplay p { margin: 5px 0; color: var(--text-secondary); font-weight: bold; }
+     #recommendationDisplay a {
+         font-weight: bold;
+         color: var(--accent-secondary);
+         font-size: 1.15em;
+         text-decoration: underline;
+     }
+     #recommendationDisplay small { /* For notes */
+         display: block;
+         margin-top: 10px;
+         font-style: italic;
+         color: var(--text-secondary);
+         font-size: 0.95em;
+     }
+
+    /* Hide inactive sections */
+    .hidden { display: none; }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      body { padding: 15px; }
+      .container { padding: 20px 25px; }
+      h1 { font-size: 2em; }
+      h2 { font-size: 1.6em; }
+      h3 { font-size: 1.2em; }
+      .tabs { justify-content: space-around; }
+      button, .tab { padding: 8px 15px; font-size: 0.95em; }
+      .search-controls { flex-direction: column; align-items: stretch; }
+      input[type="text"] { min-width: unset; }
+      .saved-article-item { flex-direction: column; align-items: stretch; }
+      .saved-article-item button { align-self: flex-end; margin-top: 10px; }
+    }
+    @media (max-width: 480px) {
+        h1 { font-size: 1.8em; }
+        button, .tab { padding: 8px 12px; font-size: 0.9em; letter-spacing: 0px; }
+        .resource-link, .search-result-link, .topic { font-size: 0.9em; padding: 6px 10px; }
+    }
+
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>IntentRead</h1>
+    <p style="text-align: center; margin-top: -15px; margin-bottom: 25px;">The Researcher's Desk // Explore VLSI, Electronics & Related Fields</p>
+
+    <!-- Search Input & Topic Suggestions -->
+    <div id="search-and-topics">
+        <div class="search-controls">
+          <input type="text" id="query" placeholder="Enter search term or select topic...">
+          <button onclick="performSearch()">Search</button>
+        </div>
+        <div>
+          <h3 id="topic-suggestion-title">Suggested Topics (Articles):</h3>
+          <div id="topics" class="topic-suggestions">
+              <!-- Topics will be generated here by JS -->
+          </div>
+          <button onclick="generateTopics()" class="secondary" style="margin-top: 1.5rem;">Refresh Topics</button>
+        </div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <div class="tab active-tab" id="articles-tab" onclick="toggleTab('articles')">Articles</div>
+    <div class="tab" id="blogs-tab" onclick="toggleTab('blogs')">Blogs</div>
+    <div class="tab" id="research-tab" onclick="toggleTab('research')">Research</div>
+    <div class="tab" id="saved-tab" onclick="toggleTab('saved')">Reading List</div> <!-- Renamed Tab -->
+  </div>
+
+  <!-- Container for Tab Content -->
+  <div class="container">
+    <!-- Dynamic Search Results Area (Initially Hidden) -->
+    <div id="search-results-area" class="results-section hidden">
+        <h3 id="results-title">Search Results for ""</h3>
+        <div id="results-links">
+            <!-- Generated search links will appear here -->
+        </div>
+    </div>
+
+    <!-- Quick Links / Company Resources (Initially Shown) -->
+    <div id="quick-links-section" class="quick-links-section">
+       <h3>External Resources</h3>
+       <!-- Links remain the same, styling handled by CSS -->
+      <a href="https://learning.intel.com/developer/learn/courses/235/verilog-hdl-basics" class="resource-link" target="_blank">Intel Learning</a>
+      <a href="https://newsroom.intel.com/#gs.fb4t8y" class="resource-link" target="_blank">Intel Newsroom</a>
+      <a href="https://blogs.nvidia.com/" class="resource-link" target="_blank">NVIDIA Blog</a>
+      <a href="https://community.amd.com/t5/blogs/ct-p/amd-blogs" class="resource-link" target="_blank">AMD Blogs</a>
+      <a href="https://community.intel.com/t5/Blogs/ct-p/blogs" class="resource-link" target="_blank">Intel Community Blogs</a>
+      <a href="https://community.intel.com/t5/Tech-Innovation/ct-p/tech-innovation" class="resource-link" target="_blank">Intel Tech Innovation</a>
+      <a href="https://www.allaboutcircuits.com/" class="resource-link" target="_blank">All About Circuits</a>
+      <a href="https://semiengineering.com/" class="resource-link" target="_blank">Semiconductor Engineering</a>
+      <a href="https://medium.com/topic/technology" class="resource-link" target="_blank">Medium (Technology)</a>
+      <a href="https://www.eetimes.com/" class="resource-link" target="_blank">EE Times</a>
+      <a href="https://www.anandtech.com/" class="resource-link" target="_blank">AnandTech</a>
+      <a href="https://spectrum.ieee.org/" class="resource-link" target="_blank">IEEE Spectrum</a>
+      <a href="https://hackaday.com/" class="resource-link" target="_blank">Hackaday</a>
+      <a href="https://www.edn.com/" class="resource-link" target="_blank">EDN Network</a>
+    </div>
+
+    <!-- Static Research Paper Links (Initially Hidden) -->
+     <div id="research-links-section" class="quick-links-section hidden">
+        <h3>Research Databases</h3>
+        <!-- Links remain the same, styling handled by CSS -->
+        <a href="https://ieeexplore.ieee.org/Xplore/home.jsp" data-search-url="https://ieeexplore.ieee.org/search/searchresult.jsp?newsearch=true&queryText=" data-site-name="IEEE Xplore" class="resource-link" target="_blank">IEEE Xplore</a>
+        <a href="https://scholar.google.com/" data-search-url="https://scholar.google.com/scholar?q=" data-site-name="Google Scholar" class="resource-link" target="_blank">Google Scholar</a>
+        <a href="https://www.jstor.org/" data-search-url="https://www.jstor.org/action/doBasicSearch?Query=" data-site-name="JSTOR" class="resource-link" target="_blank">JSTOR</a>
+        <a href="https://www.sciencedirect.com/" data-search-url="https://www.sciencedirect.com/search?qs=" data-site-name="ScienceDirect" class="resource-link" target="_blank">ScienceDirect</a>
+        <a href="https://arxiv.org/" data-search-url="https://arxiv.org/search/?query=" data-site-name="arXiv" class="resource-link" target="_blank">arXiv</a>
+        <a href="https://dl.acm.org/" data-search-url="https://dl.acm.org/action/doSearch?AllField=" data-site-name="ACM Digital Library" class="resource-link" target="_blank">ACM Digital Library</a>
+        <a href="https://www.semanticscholar.org/" data-search-url="https://www.semanticscholar.org/search?q=" data-site-name="Semantic Scholar" class="resource-link" target="_blank">Semantic Scholar</a>
+        <a href="https://pubmed.ncbi.nlm.nih.gov/" data-search-url="https://pubmed.ncbi.nlm.nih.gov/?term=" data-site-name="PubMed Central" class="resource-link" target="_blank">PubMed Central</a>
+        <a href="https://patents.google.com/" data-search-url="https://patents.google.com/?q=" data-site-name="Google Patents" class="resource-link" target="_blank">Google Patents</a>
+    </div>
+
+    <!-- Saved Articles Tab Content (Initially Hidden) -->
+    <div id="saved" class="tab-content hidden">
+        <div class="card">
+            <h2>Save Article to Reading List</h2>
+            <label for="articleUrl">Article URL:</label>
+            <input type="text" id="articleUrl" placeholder="https://example.com/article">
+            <label for="articleTitle">Title (Optional):</label>
+            <input type="text" id="articleTitle" placeholder="Give it a short title">
+            <label for="articleNotes">Notes (Optional):</label>
+            <textarea id="articleNotes" rows="3" placeholder="Add brief notes or keywords..."></textarea>
+            <button onclick="saveArticle()">Save Article</button>
+        </div>
+
+        <div class="card">
+            <h2>Random Article Suggestion</h2>
+            <button onclick="recommendArticle()">Suggest an Article</button>
+            <div id="recommendationDisplay">
+                <p>Click the button for a suggestion from your list.</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>My Reading List</h2>
+            <div id="savedArticlesList">
+                <p>Your reading list is empty.</p>
+            </div>
+        </div>
+    </div>
+  </div>
+
+
+  <script>
+    // --- EXPANDED Topic Lists per Category ---
+    const articleTopics = [
+      // VLSI & Digital Design
+      "RISC-V adoption trends", "Latest advancements in EUV lithography", "Impact of chiplets on SoC design",
+      "Open source EDA tools update", "Comparison of modern FPGA architectures", "Future of CMOS scaling: GAA vs CFET",
+      "Trends in high-bandwidth memory (HBM)", "Challenges in 3D IC integration", "State of hardware security modules (HSMs)",
+      "ASIC vs FPGA for AI acceleration", "Introduction to SystemVerilog features", "Overview of UVM methodology",
+      "Design for Testability (DFT) techniques overview", "Clock Domain Crossing (CDC) challenges", "Static Timing Analysis (STA) fundamentals",
+      "Power management techniques in SoCs", "Network-on-Chip (NoC) architectures explained", "Formal verification methods introduction",
+      "Trends in processor microarchitecture", "Memory controller design principles", "Hardware description languages (HDL) comparison",
+      // Analog & Mixed-Signal
+      "Latest GaN power device applications", "Trends in analog IC design automation", "High-speed ADC architectures overview",
+      "DAC design considerations for audio", "PLL design for frequency synthesis", "Low-dropout regulator (LDO) basics",
+      "Switched-capacitor circuit applications", "Sensor interface design challenges", "RF front-end module integration",
+      "Wireless power transfer methods review", "Energy harvesting technologies for IoT", "MEMS sensor technology overview",
+      "Operational amplifier (Op-Amp) applications guide", "Basics of filter design (analog)", "Signal integrity in mixed-signal design",
+      // Electronics & Components
+      "Next-gen display technologies (OLED, MicroLED)", "IoT security vulnerabilities and mitigation", "Comparison of IoT communication protocols (LoRa, NB-IoT)",
+      "Basics of PCB design for high speed", "Power electronics for electric vehicles", "Solid-state lighting (LED) advancements",
+      "Battery management system (BMS) overview", "Introduction to embedded systems programming", "Wearable technology trends",
+      // Signals & Systems / Radar
+      "5G and 6G wireless communication challenges", "Software Defined Radio (SDR) basics and applications", "Introduction to digital signal processing (DSP)",
+      "Automotive radar sensor fusion techniques", "Principles of modern radar systems", "Phased array antenna technology explained",
+      "Image processing algorithms overview", "Basics of control systems theory", "Kalman filtering explained",
+      // Emerging & Cross-Disciplinary
+      "Quantum computing hardware progress report", "Neuromorphic computing approaches", "AI hardware accelerators market review",
+      "Impact of AI on semiconductor design", "Ethical considerations in AI hardware", "Bio-integrated electronics applications",
+      "Flexible electronics technology update", "Cybersecurity for embedded systems", "Role of electronics in sustainable energy",
+      "Space electronics challenges and solutions"
+    ]; // 60+ topics
+
+    const blogTopics = [
+      // VLSI & Digital Design
+      "Debugging SystemVerilog UVM sequences: Common pitfalls", "My experience with open-source FPGA toolchains (Yosys, nextpnr)",
+      "Optimizing RTL for synthesis: Tips and tricks", "Clock domain crossing (CDC) verification strategies",
+      "Setting up a basic RISC-V simulation environment", "How to write effective SystemVerilog Assertions (SVA)",
+      "Understanding timing constraints (SDC) for STA", "Low-power design techniques I actually use", "Floorplanning considerations for a complex block",
+      "Comparing different logic synthesis tools", "Scripting for EDA flow automation (Tcl, Python)", "Formal verification for specific properties",
+      "Linting your Verilog/VHDL code effectively", "Experiences with High-Level Synthesis (HLS)", "Building a simple CPU core in Verilog",
+      "FPGA prototyping best practices", "Handling metastability in asynchronous designs", "Deep dive into AXI protocol",
+      // Analog & Mixed-Signal
+      "Practical PCB layout tips for analog circuits", "Debugging noise issues in mixed-signal boards", "Choosing the right Op-Amp for your application",
+      "Simulating analog circuits with SPICE: Getting started", "How to design a simple buck converter", "PLL loop filter design considerations",
+      "Characterizing ADC performance (INL/DNL)", "Sensor calibration techniques", "Matching techniques in analog layout",
+      "RF impedance matching basics", "Building a simple SDR receiver project", "Troubleshooting common analog circuit problems",
+      // Electronics & Components
+      "Getting started with Raspberry Pi Pico (RP2040)", "Choosing the right microcontroller for an IoT project", "ESP32 vs ESP8266: Which to use?",
+      "Powering your project: Battery selection guide", "Soldering SMD components by hand", "Designing a custom PCB with KiCad/Eagle",
+      "Using I2C and SPI communication effectively", "Interfacing sensors with Arduino/ESP32", "Building a simple home automation device",
+      "3D printing enclosures for electronics projects", "Component selection strategies for hobbyists", "Understanding datasheets: A practical guide",
+      // Signals & Systems / Radar
+      "Implementing a basic FIR filter in Python/MATLAB", "Visualizing signals with FFT", "Decoding common radio signals with SDR",
+      "My first steps into radar signal processing", "Building a simple Doppler radar module", "Audio processing effects explained (Reverb, Delay)",
+      "Using GNU Radio companion for SDR experiments", "Control loop tuning (PID) practical tips",
+      // General & Career
+      "Preparing for a VLSI design interview", "Day in the life of a verification engineer", "Learning resources for analog design",
+      "Contributing to open-source hardware projects", "Managing complex hardware projects", "Technical writing tips for engineers",
+      "Side projects for hardware engineers", "Transitioning from software to hardware", "Keeping up with semiconductor industry news"
+    ]; // 60+ topics
+
+    const researchTopics = [
+      // VLSI & Digital Design
+      "Novel low-power SRAM/DRAM cell designs", "Advanced FinFET/GAA device modeling", "Cryogenic CMOS circuits for quantum computing interfaces",
+      "Hardware Trojan detection and prevention techniques", "Physically Unclonable Function (PUF) security analysis",
+      "Approximate computing circuit implementations", "Stochastic computing architectures", "In-memory computing paradigms (ReRAM, MRAM based)",
+      "3D NAND flash memory scaling challenges", "Advanced clocking strategies for high-performance chips", "Thermal-aware design and optimization in 3D ICs",
+      "Reliability modeling for advanced process nodes", "Machine learning applications in EDA", "Formal methods for security verification",
+      "Novel NoC topologies and routing algorithms", "Power delivery network (PDN) optimization techniques", "Radiation hardening techniques for space applications",
+      // Analog & Mixed-Signal
+      "Ultra-low power ADC/DAC architectures", "High-frequency PLL and clock generation circuits", "Digitally assisted analog calibration methods",
+      "Wideband RF transceiver design", "Millimeter-wave circuit design in CMOS/SiGe", "Energy-efficient DC-DC converter topologies",
+      "Advanced sensor readout circuits", "Modeling and simulation of analog circuit variability", "Biomedical implantable circuit design",
+      "Time-based analog-to-digital converters (TDCs)", "Sub-threshold circuit design techniques", "Analog computing circuits",
+      // Electronics & Components
+      "Novel non-volatile memory technologies (FeRAM, PCM)", "Perovskite solar cell efficiency improvements", "Organic Thin-Film Transistor (OTFT) applications",
+      "Microfluidic devices integrated with electronics", "Advanced packaging technologies (Fan-out, SiP)", "MEMS resonator design for timing applications",
+      "GaN/SiC device reliability studies", "High-density power module integration", "Flexible and stretchable electronics materials",
+      // Signals & Systems / Radar
+      "Advanced radar waveform design (Cognitive Radar)", "Compressive sensing applications in signal processing", "Massive MIMO channel modeling and precoding",
+      "Deep learning for communication systems (PHY layer)", "Joint Radar-Communication systems", "Metamaterial-based antenna design",
+      "Sparse signal recovery algorithms", "Advanced beamforming techniques", "Non-linear system identification methods",
+      "Quantum signal processing concepts", "Graph signal processing applications",
+      // Emerging & Cross-Disciplinary
+      "Photonic integrated circuits for AI and communication", "Spintronic device applications", "Carbon nanotube FETs (CNFETs) progress",
+      "Molecular electronics concepts", "Brain-computer interface (BCI) circuit design", "Security analysis of IoT device firmware",
+      "Hardware acceleration for homomorphic encryption", "Energy harvesting from ambient RF/vibrations", "Triboelectric nanogenerators (TENGs)",
+      "Machine learning for material discovery (electronics)"
+    ]; // 60+ topics
+
+
+    // --- Global Variable for Saved Articles ---
+    let savedArticles = [];
+
+    // --- Topic Generation ---
+    function getRandomTopics(topicList, n = 8) { // Increased default to 8
+      if (!topicList || topicList.length === 0) return [];
+      const shuffled = [...topicList];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      return shuffled.slice(0, n);
+    }
+
+    function generateTopics() {
+      const container = document.getElementById("topics");
+      const titleElement = document.getElementById("topic-suggestion-title");
+      if (!container || !titleElement) return;
+
+      const activeTabId = document.querySelector('.tab.active-tab').id;
+      let currentTopicList = [];
+      let titlePrefix = "Suggested Topics"; // Updated Title
+
+      if (activeTabId === 'articles-tab') {
+        currentTopicList = articleTopics;
+        titlePrefix += " (Articles)";
+      } else if (activeTabId === 'blogs-tab') {
+        currentTopicList = blogTopics;
+        titlePrefix += " (Blogs)";
+      } else if (activeTabId === 'research-tab') {
+        currentTopicList = researchTopics;
+        titlePrefix += " (Research)";
+      }
+
+      titleElement.textContent = titlePrefix + ":";
+      container.innerHTML = "";
+
+      const topics = getRandomTopics(currentTopicList); // Get 8 random topics
+      if (topics.length === 0) {
+          container.innerHTML = "<p>No topics available for this category.</p>";
+          return;
+      }
+
+      topics.forEach(topic => {
+        const span = document.createElement("span");
+        span.className = "topic";
+        span.textContent = topic;
+        span.onclick = () => {
+            const queryInput = document.getElementById("query");
+            if(queryInput) queryInput.value = topic;
+            // performSearch(); // Optional
+        };
+        container.appendChild(span);
+      });
+    }
+
+    // --- Search Functionality ---
+    function performSearch() {
+      const queryInput = document.getElementById("query");
+      const resultsArea = document.getElementById("search-results-area");
+      const resultsLinksContainer = document.getElementById("results-links");
+      const resultsTitle = document.getElementById("results-title");
+
+      if (!queryInput || !resultsArea || !resultsLinksContainer || !resultsTitle) return;
+
+      const query = queryInput.value.trim();
+      if (!query) {
+        alert("Please enter a search term.");
+        resultsArea.classList.add('hidden');
+        return;
+      }
+
+      const encodedQuery = encodeURIComponent(query);
+      resultsLinksContainer.innerHTML = ''; // Clear previous results
+      resultsTitle.textContent = `Search Results for "${query}"`; // Update title
+
+      const activeTabId = document.querySelector('.tab.active-tab').id;
+      let searchUrls = {}; // Initialize empty object for search URLs
+
+      // --- Define Search URLs based on Active Tab ---
+
+      if (activeTabId === 'articles-tab') {
+        // ** EXPANDED FIXED, BROADER TARGETS FOR ARTICLES **
+        searchUrls = {
+          'Wikipedia': `https://en.wikipedia.org/w/index.php?search=${encodedQuery}`,
+          'Google Search': `https://www.google.com/search?q=${encodedQuery}`, // General Google Search
+          'IEEE Spectrum': `https://spectrum.ieee.org/search?q=${encodedQuery}`, // High-level tech news/analysis
+          'All About Circuits': `https://www.allaboutcircuits.com/search/?q=${encodedQuery}`, // Good educational content
+          'Semiconductor Eng.': `https://semiengineering.com/?s=${encodedQuery}`, // Broader industry news/analysis
+          'EE Times': `https://www.eetimes.com/?s=${encodedQuery}`, // Industry news
+          'EDN Network': `https://www.edn.com/?s=${encodedQuery}`, // Design-focused articles
+          'Electronic Design': `https://www.electronicdesign.com/search/results?q=${encodedQuery}`, // Another design resource
+          'Ars Technica': `https://arstechnica.com/search/?query=${encodedQuery}`, // Quality tech journalism
+          'Hackaday': `https://hackaday.com/?s=${encodedQuery}`, // Practical projects and news
+          'Electronics StackExchange': `https://electronics.stackexchange.com/search?q=${encodedQuery}`, // Q&A Community
+          'HowStuffWorks (Electronics)': `https://www.google.com/search?q=site%3Aelectronics.howstuffworks.com+${encodedQuery}`, // Basic explanations
+          'Google Patents': `https://patents.google.com/?q=${encodedQuery}` // Check for related patents
+        };
+      }
+      else if (activeTabId === 'blogs-tab') {
+        // ** EXPANDED FIXED, BROADER TARGETS FOR BLOGS/DISCUSSIONS **
+         searchUrls = {
+          'Medium (VLSI/Electronics)': `https://medium.com/search?q=${encodedQuery}+VLSI+OR+electronics`, // Platform for blogs
+          'Stack Overflow (Relevant Tags)': `https://stackoverflow.com/search?q=${encodedQuery}+[verilog]+or+[vhdl]+or+[fpga]+or+[systemverilog]+or+[pcb]+or+[signal-processing]`, // Code/Tool Q&A
+          'Electronics StackExchange': `https://electronics.stackexchange.com/search?q=${encodedQuery}`, // Q&A Community (often blog-like answers)
+          'Reddit (r/VLSI)': `https://www.reddit.com/r/VLSI/search/?q=${encodedQuery}&restrict_sr=1`, // Community Discussion
+          'Reddit (r/FPGA)': `https://www.reddit.com/r/FPGA/search/?q=${encodedQuery}&restrict_sr=1`, // FPGA Community
+          'Reddit (r/ECE)': `https://www.reddit.com/r/ECE/search/?q=${encodedQuery}&restrict_sr=1`, // Broader ECE Community
+          'Reddit (r/DSP)': `https://www.reddit.com/r/DSP/search/?q=${encodedQuery}&restrict_sr=1`, // DSP Community
+          'Dev.to (Electronics/Hardware)': `https://dev.to/search?q=electronics%20OR%20hardware%20${encodedQuery}`, // Developer blogs
+          'Hackaday.io': `https://hackaday.io/search?term=${encodedQuery}`, // Project logs often contain blog-like details
+          'EEVblog Forum': `https://www.eevblog.com/forum/index.php?action=search2;search=${encodedQuery}`, // Popular electronics forum
+          'GitHub Discussions': `https://github.com/search?q=${encodedQuery}&type=discussions` // Search project discussions
+        };
+      }
+      else if (activeTabId === 'research-tab') {
+        // ** DYNAMIC TARGETS FROM RESEARCH LINKS SECTION (Correct for Research) **
+        const sourceLinksSelector = '#research-links-section .resource-link[data-search-url]';
+        const sourceLinks = document.querySelectorAll(sourceLinksSelector);
+        sourceLinks.forEach(link => {
+            const searchUrlBase = link.dataset.searchUrl;
+            const siteName = link.dataset.siteName;
+            if (searchUrlBase && siteName) {
+                let finalSearchUrl = searchUrlBase + encodedQuery;
+                 // Add specific params if needed (like for arXiv)
+                 if (siteName === 'arXiv' && !searchUrlBase.includes('searchtype')) { // Adjusted siteName check
+                      finalSearchUrl += '&searchtype=all&source=header';
+                  }
+                 // Add specific params for PubMed if needed
+                 if (siteName === 'PubMed Central' && !searchUrlBase.endsWith('=')) { // Adjusted siteName check
+                     // Assuming base URL ends with 'term='
+                     finalSearchUrl = searchUrlBase + encodedQuery;
+                 }
+                searchUrls[siteName] = finalSearchUrl;
+            }
+        });
+      }
+
+      // --- Generate Links ---
+      if (Object.keys(searchUrls).length === 0) {
+           resultsLinksContainer.innerHTML = `<p>No specific search targets defined or found for "${query}" in this category.</p>`;
+      } else {
+          // Sort keys alphabetically for consistent order
+          const sortedSiteNames = Object.keys(searchUrls).sort();
+          sortedSiteNames.forEach(siteName => {
+              const url = searchUrls[siteName];
+              const link = document.createElement('a');
+              link.href = url;
+              link.textContent = `Search on ${siteName}`; // Reverted text
+              link.className = 'search-result-link';
+              link.target = '_blank';
+              link.rel = 'noopener noreferrer';
+              resultsLinksContainer.appendChild(link);
+          });
+      }
+
+      resultsArea.classList.remove('hidden'); // Show the results area
+    }
+
+    // --- Saved Article Functions ---
+
+    function saveArticle() {
+        const urlInput = document.getElementById('articleUrl');
+        const titleInput = document.getElementById('articleTitle');
+        const notesInput = document.getElementById('articleNotes');
+
+        const url = urlInput.value.trim();
+        const title = titleInput.value.trim();
+        const notes = notesInput.value.trim();
+
+        if (!url) {
+            alert("Article URL is required.");
+            return;
+        }
+        // Basic URL validation
+        if (!url.toLowerCase().startsWith('http://') && !url.toLowerCase().startsWith('https://')) {
+            alert("Invalid URL format. Must start with http:// or https://");
+            return;
+        }
+
+        const newArticle = {
+            url: url,
+            title: title || url, // Use URL as fallback title
+            notes: notes
+        };
+
+        savedArticles.push(newArticle);
+        saveData(); // Save to localStorage
+        renderSavedArticles(); // Update the displayed list
+
+        // Clear inputs
+        urlInput.value = '';
+        titleInput.value = '';
+        notesInput.value = '';
+
+        alert("Article saved to Reading List."); // Updated text
+    }
+
+    function renderSavedArticles() {
+        const listContainer = document.getElementById('savedArticlesList');
+        if (!listContainer) return;
+
+        listContainer.innerHTML = ''; // Clear current list
+
+        if (savedArticles.length === 0) {
+            listContainer.innerHTML = '<p>Your reading list is empty.</p>'; // Updated text
+            return;
+        }
+
+        savedArticles.forEach((article, index) => {
+            const item = document.createElement('div');
+            item.className = 'saved-article-item';
+
+            const textDiv = document.createElement('div');
+            const link = document.createElement('a');
+            link.href = article.url;
+            link.textContent = article.title;
+            link.target = '_blank'; // Open in new tab
+            link.rel = 'noopener noreferrer';
+            textDiv.appendChild(link);
+
+            if (article.notes) {
+                const notesP = document.createElement('p');
+                notesP.textContent = article.notes;
+                textDiv.appendChild(notesP);
+            }
+
+            const deleteButton = document.createElement('button');
+            deleteButton.textContent = 'Delete'; // Updated text
+            deleteButton.onclick = () => deleteArticle(index);
+
+            item.appendChild(textDiv);
+            item.appendChild(deleteButton);
+            listContainer.appendChild(item);
+        });
+    }
+
+    function deleteArticle(index) {
+        if (index < 0 || index >= savedArticles.length) return;
+
+        const articleToDelete = savedArticles[index];
+        if (confirm(`Remove "${articleToDelete.title}" from your reading list?`)) { // Updated text
+            savedArticles.splice(index, 1); // Remove item from array
+            saveData(); // Update localStorage
+            renderSavedArticles(); // Update the displayed list
+            // Clear recommendation if the deleted item was displayed
+            const recommendationDisplay = document.getElementById('recommendationDisplay');
+            if (recommendationDisplay.dataset.recommendedIndex == index) { // Use data attribute to track
+                 recommendationDisplay.innerHTML = '<p>Suggested article was removed from the list.</p>'; // Updated text
+                 delete recommendationDisplay.dataset.recommendedIndex;
+            }
+        }
+    }
+
+    function recommendArticle() {
+        const display = document.getElementById('recommendationDisplay');
+        if (!display) return;
+
+        if (savedArticles.length === 0) {
+            display.innerHTML = '<p>Your reading list is empty. Save some articles first!</p>'; // Updated text
+            delete display.dataset.recommendedIndex;
+            return;
+        }
+
+        const randomIndex = Math.floor(Math.random() * savedArticles.length);
+        const recommended = savedArticles[randomIndex];
+
+        display.dataset.recommendedIndex = randomIndex; // Store index for potential deletion check
+        display.innerHTML = `
+            <p>How about reading this next?</p>
+            <a href="${recommended.url}" target="_blank" rel="noopener noreferrer">${recommended.title}</a>
+            ${recommended.notes ? `<small>Your notes: ${recommended.notes}</small>` : ''}
+        `; // Updated text
+    }
+
+
+    // --- Tab Switching ---
+    function toggleTab(tabName) {
+      const articlesTab = document.getElementById("articles-tab");
+      const blogsTab = document.getElementById("blogs-tab");
+      const researchTab = document.getElementById("research-tab");
+      const savedTab = document.getElementById("saved-tab"); // Get new tab
+
+      const quickLinks = document.getElementById("quick-links-section");
+      const researchLinks = document.getElementById("research-links-section");
+      const savedContent = document.getElementById("saved"); // Get new content area
+      const resultsArea = document.getElementById("search-results-area");
+      const searchAndTopics = document.getElementById("search-and-topics"); // Container for search/topics
+
+      // Safety check
+      if (!articlesTab || !blogsTab || !researchTab || !savedTab || !quickLinks || !researchLinks || !savedContent || !resultsArea || !searchAndTopics) return;
+
+      // Always hide search results when switching tabs
+      resultsArea.classList.add('hidden');
+      resultsArea.querySelector('#results-links').innerHTML = '';
+      resultsArea.querySelector('#results-title').textContent = '';
+
+      // Deactivate all tabs first
+      articlesTab.classList.remove("active-tab");
+      blogsTab.classList.remove("active-tab");
+      researchTab.classList.remove("active-tab");
+      savedTab.classList.remove("active-tab");
+
+      // Hide all specific content sections first
+      quickLinks.classList.add("hidden");
+      researchLinks.classList.add("hidden");
+      savedContent.classList.add("hidden");
+
+      // Hide or show search/topic suggestions container
+      searchAndTopics.style.display = 'block'; // Default to show
+
+      // Activate the selected tab and show relevant content
+      if (tabName === "articles") {
+        articlesTab.classList.add("active-tab");
+        quickLinks.classList.remove("hidden");
+        generateTopics(); // Ensure topics are shown/regenerated
+      } else if (tabName === "blogs") {
+        blogsTab.classList.add("active-tab");
+        quickLinks.classList.remove("hidden");
+        generateTopics(); // Ensure topics are shown/regenerated
+      } else if (tabName === "research") {
+        researchTab.classList.add("active-tab");
+        researchLinks.classList.remove("hidden");
+        generateTopics(); // Ensure topics are shown/regenerated
+      } else if (tabName === "saved") {
+        savedTab.classList.add("active-tab");
+        savedContent.classList.remove("hidden");
+        searchAndTopics.style.display = 'none'; // Hide search/topics for Saved tab
+        renderSavedArticles(); // Ensure list is rendered when tab is activated
+      }
+    }
+
+    // --- Local Storage Helpers ---
+    function saveData() {
+        try {
+            localStorage.setItem('brainer_savedArticles', JSON.stringify(savedArticles));
+        } catch (e) {
+            console.error("Error saving data to localStorage:", e);
+            alert("Error saving data. LocalStorage might be full or disabled.");
+        }
+    }
+
+    function loadData() {
+        try {
+            const saData = localStorage.getItem('brainer_savedArticles');
+            if (saData) {
+                savedArticles = JSON.parse(saData);
+            } else {
+                savedArticles = []; // Ensure it's an empty array if nothing is saved
+            }
+        } catch (e) {
+            console.error("Error loading data from localStorage:", e);
+            savedArticles = []; // Reset on error
+        }
+        // Don't render here, render when the 'saved' tab is activated in toggleTab
+    }
+
+
+    // --- Initial Setup ---
+    window.onload = () => {
+        loadData(); // Load saved articles first
+        toggleTab('articles'); // Set initial state to Articles tab (which also calls generateTopics)
+    };
+
+  </script>
+</body>
+</html>
